@@ -2,8 +2,8 @@ import mysql from 'mysql';
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'reporting_app',
-    password: 'password123'
+    user: 'root',
+    password: 'your_mysql_password'
 });
 
 class OlympicWinnersService {
@@ -11,7 +11,6 @@ class OlympicWinnersService {
     getData(request, resultsCallback) {
 
         const SQL = this.buildSql(request);
-
         connection.query(SQL, (error, results) => {
             const rowCount = this.getRowCount(request, results);
             const resultsForPage = this.cutResultsToPageSize(request, results);
@@ -31,9 +30,6 @@ class OlympicWinnersService {
         const groupBySql = this.createGroupBySql(request);
 
         const SQL = selectSql + fromSql + whereSql + groupBySql + orderBySql + limitSql;
-
-        console.log(SQL);
-
         return SQL;
     }
 
