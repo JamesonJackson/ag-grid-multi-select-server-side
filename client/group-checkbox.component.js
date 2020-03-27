@@ -2,7 +2,10 @@ export class GroupCheckbox {
   init(agParams) {
     // ON INITIAL LOAD
     // Create rendered  data structure on the fly
-    if(!agParams.context.renderedGroups.has(agParams.node.id)) agParams.context.renderedGroups.add(agParams.node.id);
+    agParams.context.renderedGroups.add(agParams.node.id);
+    // set up data structure
+    if(!agParams.context.selectedRows[agParams.node.id]) agParams.context.selectedRows[agParams.node.id] = new Set();
+    if(!agParams.context.renderedRows[agParams.node.id]) agParams.context.renderedRows[agParams.node.id] = new Set();
     // Create selected if 'all' checked
     // We need to update these data structure before setting the innerHTML
     if(agParams.context.allSelected) agParams.context.selectedGroups.add(agParams.node.id);
@@ -12,7 +15,7 @@ export class GroupCheckbox {
     this.eGui = document.createElement('span');
 
     this.eGui.innerHTML = agParams.value ?
-      agParams.context.selectedGroups.has(agParams.node.id) ?
+      agParams.context.selectedGroups.has(agParams.node.id) || ( agParams.context.renderedRows[agParams.node.id].size&& agParams.context.selectedRows[agParams.node.id].size === agParams.context.renderedRows[agParams.node.id].size)  ?
         `<input id="${agParams.node.id}" type="checkbox" name="checkbox" checked> ${agParams.value}` :
         `<input id="${agParams.node.id}" type="checkbox" name="checkbox"> ${agParams.value}` : '';
 
@@ -23,7 +26,7 @@ export class GroupCheckbox {
         agParams.context.selectedGroups.delete(agParams.node.id);
         agParams.context.allSelected = false;
         // we will likely have to change our data structure here
-        agParams.context.selectedRows.clear();
+        agParams.context.selectedRows[agParams.node.id].clear()
       }
 
       const start = agParams.api.getFirstDisplayedRow();

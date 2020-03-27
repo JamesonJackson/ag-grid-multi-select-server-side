@@ -15,8 +15,8 @@ const gridOptions = {
 		allSelected: false,
 		renderedGroups: new Set(),
 		selectedGroups: new Set(), 
-		selectedRows: new Set(),
-		renderedRows: new Set(),
+		selectedRows: { },
+		renderedRows: { }
 	},
 	components: { 
 		agColumnHeader: HeaderCheckbox,
