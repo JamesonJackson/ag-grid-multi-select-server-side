@@ -10,13 +10,13 @@ const gridOptions = {
 	rowModelType: 'serverSide',
 	rowSelection: 'multiple',
 	animateRows: false,
-	suppressChangeDetection:true,
 	// ctx available to all cell renderers
 	context:{
-		groupedColumn: 'country',
 		allSelected: false,
-		selectedGroups: new Set(),
+		renderedGroups: new Set(),
+		selectedGroups: new Set(), 
 		selectedRows: new Set(),
+		renderedRows: new Set(),
 	},
 	components: { 
 		agColumnHeader: HeaderCheckbox,
@@ -33,7 +33,7 @@ const gridOptions = {
 			hide: true
 		},
 		{ field: 'sport' },
-		{ field: 'year', filter: 'number', filterParams: { newRowsAction: 'keep' } },
+		{ field: 'year', filter: 'number' },
 		{ field: 'gold', aggFunc: 'sum' },
 		{ field: 'silver', aggFunc: 'sum' },
 		{ field: 'bronze', aggFunc: 'sum' },

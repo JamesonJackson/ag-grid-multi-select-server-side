@@ -1,41 +1,41 @@
 export class GroupCheckbox {
-
   init(agParams) {
+    // ON INITIAL LOAD
+    // Create rendered  data structure on the fly
+    if(!agParams.context.renderedGroups.has(agParams.node.id)) agParams.context.renderedGroups.add(agParams.node.id);
+    // Create selected if 'all' checked
+    // We need to update these data structure before setting the innerHTML
+    if(agParams.context.allSelected) agParams.context.selectedGroups.add(agParams.node.id);
+    // init some props
     this.checkbox = null;
     this.agParams = agParams;
     this.eGui = document.createElement('span');
 
-    const rowGroupField = agParams.node.field;
-    const group = agParams.node.data[rowGroupField]
-
-    // on init if all are selected, put this group on the set, otherwise we will toggle them manually with the checkbox
-    if (agParams.context.allSelected) {
-      agParams.context.groupedColumn = rowGroupField;
-      agParams.context.selectedGroups.add(group);
-      // add the students for this group...
-    } else {
-      // ?
-    }
-
     this.eGui.innerHTML = agParams.value ?
-      agParams.context.selectedGroups.has(agParams.node.data[agParams.context.groupedColumn]) ?
-        `<input id="checkbox-${agParams.rowIndex}" type="checkbox" name="checkbox" checked> ${agParams.value}` :
-        `<input id="checkbox-${agParams.rowIndex}" type="checkbox" name="checkbox"> ${agParams.value}` : '';
+      agParams.context.selectedGroups.has(agParams.node.id) ?
+        `<input id="${agParams.node.id}" type="checkbox" name="checkbox" checked> ${agParams.value}` :
+        `<input id="${agParams.node.id}" type="checkbox" name="checkbox"> ${agParams.value}` : '';
 
     this.eventListener = (evt) => {
-      if (evt.target.checked) agParams.context.selectedGroups.add(group);
-      else agParams.context.selectedGroups.delete(group);
-      
+      if (evt.target.checked) {
+        agParams.context.selectedGroups.add(agParams.node.id);
+      } else {
+        agParams.context.selectedGroups.delete(agParams.node.id);
+        agParams.context.allSelected = false;
+        // we will likely have to change our data structure here
+        agParams.context.selectedRows.clear();
+      }
+
       const start = agParams.api.getFirstDisplayedRow();
       const end = agParams.api.getLastDisplayedRow();
       const visibleRows = [];
-      
       for (let i = start; i <= end; i++) visibleRows.push(agParams.api.getDisplayedRowAtIndex(i));
       agParams.api.redrawRows({ rowNodes: visibleRows });
+      agParams.api.refreshHeader();
     }
 
     setTimeout(() => {
-      this.checkbox = document.getElementById(`checkbox-${agParams.rowIndex}`);
+      this.checkbox = document.getElementById(`${agParams.node.id}`);
       if (!this.checkbox) return;
       this.checkbox.addEventListener('change', this.eventListener);
     }, 0);
