@@ -9,14 +9,14 @@ import { GroupCheckbox } from './group-checkbox.component';
 const gridOptions = {
 	rowModelType: 'serverSide',
 	rowSelection: 'multiple',
-	animateRows: false,
 	// ctx available to all cell renderers
-	context:{
-		allSelected: false,
-		renderedGroups: new Set(),
-		selectedGroups: new Set(), 
+	context: {
+		headerState: 'UNCHECKED',
+		groupState: { },
 		selectedRows: { },
-		renderedRows: { }
+		renderedRows:  { },
+		selectedGroups: new Set(),
+		renderedGroups: new Set(),
 	},
 	components: { 
 		agColumnHeader: HeaderCheckbox,
