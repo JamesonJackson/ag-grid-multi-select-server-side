@@ -4,12 +4,7 @@ import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
 import { Grid } from 'ag-grid-community';
 
-// initialize in server mode
 let serverMode;
-document.addEventListener('DOMContentLoaded', function() { 
-	serverMode = 'SERVER'
-	createServerSideGrid();
-});
 
 function toggleGrid() {
 	if(serverMode === 'CLIENT') {
@@ -124,12 +119,10 @@ function createClientSideGrid() {
 				gridOptions.api.setRowData(httpResult);
 			}
 		};
-
 }
 
-// add button for poc
-document.addEventListener('DOMContentLoaded', function() {
-	const toggleBtn = document.querySelector('#grid-toggle');
-	toggleBtn.addEventListener('click', toggleGrid)
- });
-
+document.addEventListener('DOMContentLoaded', function() { 
+	serverMode = 'SERVER'
+	document.querySelector('#grid-toggle').addEventListener('click', toggleGrid)
+	createServerSideGrid();
+});
