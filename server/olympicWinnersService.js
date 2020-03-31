@@ -1,9 +1,10 @@
 import mysql from 'mysql';
+import { sqlPassword } from '../creds';
 
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'your_mysql_password'
+    password: sqlPassword
 });
 
 class OlympicWinnersService {
