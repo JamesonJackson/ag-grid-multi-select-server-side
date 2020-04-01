@@ -4,50 +4,59 @@ import "ag-grid-community/dist/styles/ag-theme-balham.css";
 
 import { Grid } from 'ag-grid-community';
 
-// initialize in server mode
 let serverMode;
-document.addEventListener('DOMContentLoaded', function() { 
-	serverMode = 'SERVER'
-	createServerSideGrid();
-});
+let sharedSortModel;
 
+const sharedColumnDefs = [
+	{ 
+		field: 'country', 
+		rowGroup: true, 
+		hide: true, 			
+	},
+	{ field: 'sport'},
+	{ field: 'year' },
+	{ field: 'gold', aggFunc: 'sum'},
+	{ field: 'bronze', aggFunc: 'sum'},
+	{ field: 'silver', aggFunc: 'sum'},
+];
+
+// side-effects
 function toggleGrid() {
 	if(serverMode === 'CLIENT') {
-		serverMode = 'SERVER'
-		createServerSideGrid();
-		return 
+		serverMode = 'SERVER';
+		const gridOptions = createServerSideGrid(sharedSortModel.api.getSortModel());
+		addListeners(gridOptions);
+		return;
 	}
 	if(serverMode === 'SERVER') {
-		serverMode = 'CLIENT'
-		createClientSideGrid()
-		return
+		serverMode = 'CLIENT';
+		const gridOptions =	createClientSideGrid(sharedSortModel.api.getSortModel());
+		addListeners(gridOptions);
+		return;
 	}
 }
 
-function createServerSideGrid() {
+function addListeners(gridOptions) {
+	gridOptions.onSortChanged = (currentSortModel) => {
+		sharedSortModel = currentSortModel;
+	}
+	return gridOptions;
+}
+
+function createServerSideGrid(sortModel) {
 	const gridOptions = {
 		rowModelType: 'serverSide',
-		columnDefs: [
-			{ 
-				field: 'athlete', 
-				hide: true
-			},
-			{
-				field: 'country',
-				rowGroup: true, 
-				hide: true
-			},
-			{ field: 'sport' },
-			{ field: 'year', filter: 'number' },
-			{ field: 'gold', aggFunc: 'sum' },
-			{ field: 'silver', aggFunc: 'sum' },
-			{ field: 'bronze', aggFunc: 'sum' },
-		],
+		defaultColDef: {
+			sortable: true,
+			resizable: true,
+		},
+		columnDefs: sharedColumnDefs,
 		suppressAggFuncInHeader: true,
 		autoGroupColumnDef: {
 			cellRenderer:'agGroupCellRenderer',
-			headerName: 'Athlete'
-		}
+			headerName: 'Group',
+			field: 'athlete',
+		},
 	};
 
 	const gridDiv = document.querySelector('#myGrid');
@@ -72,31 +81,25 @@ function createServerSideGrid() {
 		}
 	};
 
+	// set sortModel
+	gridOptions.api.setSortModel(sortModel);
+	
+	// initiate datasource
 	gridOptions.api.setServerSideDatasource(datasource);
+	
+	return gridOptions;
 }
 
-function createClientSideGrid() {
+function createClientSideGrid(sortModel) {
 	const gridOptions = {
-		columnDefs: [
-			{ field: 'country', rowGroup: true, hide: true },
-			{ field: 'sport'},
-			{ field: 'year', },
-			{ field: 'gold', aggFunc: 'sum' },
-			{ field: 'bronze', aggFunc: 'sum' },
-			{ field: 'silver', aggFunc: 'sum' },
-		],
-		defaultColDef: {
-			flex: 1,
-			minWidth: 100,
-		},
+		defaultColDef: { sortable:true },
+		columnDefs: sharedColumnDefs,
 		autoGroupColumnDef: {
-			headerName: 'Athlete',
+			headerName: 'Group',
 			hide: true,
 			field: 'athlete',
 			cellRenderer: 'agGroupCellRenderer',
-			cellRendererParams: {
-				checkbox: true,
-			},
+			cellRendererParams: { checkbox: true },
 		},
 		rowSelection: 'multiple',
 		groupSelectsChildren: true,
@@ -109,10 +112,13 @@ function createClientSideGrid() {
 		if(gridDiv.firstChild) gridDiv.firstChild.remove();
 		
 		new Grid(gridDiv, gridOptions);
+		
+		// set sortModel
+		gridOptions.api.setSortModel(sortModel);
 	
 		// do http request to get our sample data - not using any framework to keep the example self contained.
 		// you will probably use a framework like JQuery, Angular or something else to do your HTTP calls.
-		var httpRequest = new XMLHttpRequest();
+		const httpRequest = new XMLHttpRequest();
 		httpRequest.open(
 			'GET',
 			'https://raw.githubusercontent.com/ag-grid/ag-grid/master/grid-packages/ag-grid-docs/src/olympicWinnersSmall.json'
@@ -120,16 +126,17 @@ function createClientSideGrid() {
 		httpRequest.send();
 		httpRequest.onreadystatechange = function() {
 			if (httpRequest.readyState === 4 && httpRequest.status === 200) {
-				var httpResult = JSON.parse(httpRequest.responseText);
+				const httpResult = JSON.parse(httpRequest.responseText);
 				gridOptions.api.setRowData(httpResult);
 			}
 		};
 
+		return gridOptions;
 }
 
-// add button for poc
-document.addEventListener('DOMContentLoaded', function() {
-	const toggleBtn = document.querySelector('#grid-toggle');
-	toggleBtn.addEventListener('click', toggleGrid)
- });
-
+document.addEventListener('DOMContentLoaded', function() { 
+	serverMode = 'SERVER'
+	document.querySelector('#grid-toggle').addEventListener('click', toggleGrid)
+	const gridOptions = createServerSideGrid();
+	addListeners(gridOptions);
+});
